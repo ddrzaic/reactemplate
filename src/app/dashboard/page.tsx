@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { ParkingLotMinData as ParkingLot } from "@/app/lib/types";
 import { mapToParkingLotMinData as mapToParkingLot } from "../lib/helpers";
+import { useLogin } from "@/ui/hooks/useLogin";
 const AddNewButton = styled(Button)`
   position: absolute;
   top: 13%;
@@ -28,6 +29,7 @@ const SearchInput = styled(Input)`
 
 export default function Dashboard() {
   const [search, setSearch] = React.useState("");
+  const { token } = useLogin();
   const [clusters, setClusters] = React.useState<ParkingLot[]>(
     [] as ParkingLot[]
   );

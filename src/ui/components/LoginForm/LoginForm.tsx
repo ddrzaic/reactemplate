@@ -4,16 +4,18 @@ import { Button, Input } from "..";
 import { useFormik } from "formik";
 import { loginValidation } from "./LoginForm.validation";
 import { useRouter } from "next/navigation";
+import { useLogin } from "@/ui/hooks/useLogin";
 
 export default function LoginForm() {
   const { replace } = useRouter();
+  const { login } = useLogin();
   const { values, setFieldValue, errors, submitForm } = useFormik({
     initialValues: {
       username: "",
       password: "",
     },
-    onSubmit: (values) => {
-      replace("/dashboard");
+    onSubmit: async (values) => {
+      await login(values.username, values.password);
     },
     validationSchema: loginValidation,
     validateOnBlur: true,

@@ -12,11 +12,11 @@ import React, { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import styled from "styled-components";
 import { PriceSectionDTO } from "@/ui/components/PricingSection/PricingSection";
-import { ParkingLot } from "@/app/lib/types";
 import { mapToParkingLot } from "@/app/lib/helpers";
 import axios from "axios";
 import * as yup from "yup";
 import { useFormik } from "formik";
+import { useLogin } from "@/ui/hooks/useLogin";
 
 const StyledInput = styled(Input)`
   width: 40%;
@@ -27,6 +27,7 @@ const StyledInput = styled(Input)`
 
 export default function EditParking() {
   const { push } = useRouter();
+  const { token } = useLogin();
   const { values, errors, submitForm, setFieldValue } = useFormik({
     initialValues: {
       location: { lng: 0, lat: 0 },
@@ -47,32 +48,7 @@ export default function EditParking() {
     }),
     validateOnBlur: false,
     validateOnChange: false,
-    onSubmit: async (values) => {
-      const payload = {
-        address: values.address,
-        name: values.name,
-        latitude: values.location.lat.toFixed(4),
-        longitude: values.location.lng.toFixed(4),
-        parkingClusterZone: values.selectedZone.value,
-        numberOfParkingSpots: Number(values.numberOfParkingSpots),
-      };
-
-      try {
-        const { data } = await axios.post(
-          `${process.env.BACKEND_URL}/parking-clusters`,
-          payload,
-          {
-            headers: {
-              "ngrok-skip-browser-warning": "any",
-            },
-          }
-        );
-
-        push("/dashboard");
-      } catch (e) {
-        console.log(e);
-      }
-    },
+    onSubmit: () => {},
   });
 
   // read parking from the URL
@@ -109,9 +85,52 @@ export default function EditParking() {
 
   console.log(values);
 
-  const handleSubmit = (priceSectionDTO: PriceSectionDTO) => {
-    console.log(priceSectionDTO);
-    push("/dashboard");
+  const handleSubmit = async (priceSectionDTO: PriceSectionDTO) => {
+    submitForm();
+
+    if (
+      errors.address ||
+      errors.name ||
+      errors.numberOfParkingSpots ||
+      errors.selectedZone ||
+      errors.location ||
+      !values.location.lat ||
+      !values.location.lng
+    ) {
+      alert("Please fill all the fields");
+      return;
+    }
+
+    const payload = {
+      address: values.address,
+      name: values.name,
+      latitude: values.location.lat.toFixed(4),
+      longitude: values.location.lng.toFixed(4),
+      parkingClusterZone: values.selectedZone.value,
+      numberOfParkingSpots: Number(values.numberOfParkingSpots),
+      dynamicPricing: priceSectionDTO.isDynamicPricing,
+      priceIncreaseThreshold: priceSectionDTO.treshold,
+      priceIncreaseAmount: priceSectionDTO.priceStep,
+      priceIncreaseInterval: priceSectionDTO.percentageStep,
+      pricePerHour: priceSectionDTO.basePrice,
+    };
+
+    try {
+      const { data } = await axios.patch(
+        `${process.env.BACKEND_URL}/parking-clusters/${parkingId}`,
+        payload,
+        {
+          headers: {
+            "ngrok-skip-browser-warning": "any",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      push("/dashboard");
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   return (

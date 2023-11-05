@@ -15,6 +15,7 @@ import styled from "styled-components";
 import axios from "axios";
 import { ParkingLot } from "@/app/lib/types";
 import { mapToParkingLot } from "@/app/lib/helpers";
+import { useLogin } from "@/ui/hooks/useLogin";
 
 const SpacesLeft = styled.p<{ hasAvailableSpots }>`
   color: ${({ hasAvailableSpots }) => (hasAvailableSpots ? "#53d160" : "red")};
@@ -70,7 +71,8 @@ const EditButton = styled.div`
 `;
 
 export default function Dashboard() {
-  const { push } = useRouter();
+  const { push, refresh } = useRouter();
+  const { token } = useLogin();
   const [parking, setParking] = React.useState<ParkingLot>({} as ParkingLot);
 
   // read parking from the URL
@@ -83,6 +85,7 @@ export default function Dashboard() {
         {
           headers: {
             "ngrok-skip-browser-warning": "any",
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -92,8 +95,6 @@ export default function Dashboard() {
     fetchParking();
   }, [parkingId]);
 
-  console.log(parking);
-
   return (
     <main>
       <Container>
@@ -102,27 +103,43 @@ export default function Dashboard() {
           <GearIcon />
         </EditButton>
         <Info>
-          <h1>{parking.name}</h1>
-          <p>{parking.address}</p>
-          <SpacesLeft hasAvailableSpots={parking.availableSpots > 0}>
-            {parking.availableSpots} spaces left
+          <h1>{parking?.name}</h1>
+          <p>{parking?.address}</p>
+          <SpacesLeft hasAvailableSpots={parking?.availableSpots > 0}>
+            {parking?.availableSpots} spaces left
           </SpacesLeft>
         </Info>
         <LocationPicker
           lngLat={{
-            lng: parking.lng ?? 17.785,
-            lat: parking.lat ?? 43.343,
+            lng: parking?.lng ?? 17.785,
+            lat: parking?.lat ?? 43.343,
           }}
-          price={parking.hourlyPrice}
+          price={parking?.hourlyPrice}
         />
 
         <Subtitle>Parking spaces</Subtitle>
         <Grid>
-          {parking.spots?.map((space) => (
+          {parking?.spots?.map((space) => (
             <ParkingSpace
               key={space.id}
               occupied={space.occupied}
-              onDelete={() => {}}
+              onDelete={() => {
+                try {
+                  axios.delete(
+                    `${process.env.BACKEND_URL}/parking-spots/${space.id}`,
+                    {
+                      headers: {
+                        "ngrok-skip-browser-warning": "any",
+                        Authorization: `Bearer ${token}`,
+                      },
+                    }
+                  );
+
+                  refresh();
+                } catch (e) {
+                  console.log(e);
+                }
+              }}
             >
               {space.name}
             </ParkingSpace>
