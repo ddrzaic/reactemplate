@@ -1,4 +1,5 @@
 import StyledComponentsRegistry from "./lib/registry";
+import "./App.css";
 
 export default function RootLayout({
   children,

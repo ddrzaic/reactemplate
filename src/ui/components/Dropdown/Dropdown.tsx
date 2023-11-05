@@ -10,12 +10,14 @@ export interface DropdownProps {
   options: DropdownOption[];
   selectedOption: DropdownOption;
   onChange: (option: DropdownOption) => void;
+  label?: string;
 }
 
 export const Dropdown: React.FC<DropdownProps> = ({
   options,
   selectedOption,
   onChange,
+  label,
 }) => {
   const [isOpen, setIsOpen] = React.useState(false);
 
@@ -26,6 +28,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
 
   return (
     <S.DropdownContainer>
+      <S.Label>{label}</S.Label>
       <S.DropdownButton onClick={() => setIsOpen(!isOpen)}>
         {selectedOption.label}
         <S.ArrowIcon $isOpen={isOpen} />

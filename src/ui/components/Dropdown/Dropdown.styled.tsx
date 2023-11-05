@@ -4,6 +4,7 @@ import { ArrowDown } from "../Icons/ArrowDown";
 export const DropdownContainer = styled.div`
   position: relative;
   display: inline-block;
+  margin-bottom: 1rem;
 `;
 
 export const DropdownButton = styled.button`
@@ -66,3 +67,9 @@ export const ArrowIcon = styled(ArrowDown)<ArrowIconProps>(
     transition: transform 0.25s ease-in-out;
   `
 );
+
+export const Label = styled.p`
+  font-size: 1rem;
+  font-weight: 500;
+  margin: 0.5rem 0;
+`;
